@@ -276,5 +276,3 @@ values
 	('Nomadi','Francesca_pgl'),
 	('Depeche Mode','Francesca_pgl');
 
-
-    /*ciao
