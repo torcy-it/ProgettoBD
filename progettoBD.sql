@@ -275,3 +275,6 @@ values
 	('Adriano Celentano','Francesca_pgl'),
 	('Nomadi','Francesca_pgl'),
 	('Depeche Mode','Francesca_pgl');
+
+
+    /*ciao
