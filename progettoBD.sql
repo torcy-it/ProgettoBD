@@ -1,5 +1,7 @@
+
+/* DEFINIZIONI TABELLE*/
 CREATE TYPE FasciaOraria AS ENUM ('Mattina','Pomeriggio','Sera','Notte');
-CREATE TYPE TipoUtente AS ENUM ('Ascoltatore','Autore');
+CREATE TYPE TipoUtente AS ENUM ('Ascoltatore','Artista');
 CREATE TYPE TipoTraccia AS ENUM ('Originale','Remastering','Cover','Live','Remix');
 
 
@@ -19,6 +21,7 @@ CREATE TABLE UTENTE
 		CHECK ( DataNascita < current_date )
 );
 
+
 CREATE TABLE ALBUM
 (
 	AlbumID SERIAL PRIMARY KEY,
@@ -33,8 +36,9 @@ CREATE TABLE ALBUM
  			ON UPDATE CASCADE
  			ON DELETE CASCADE
 
+   	CONSTRAINT CheckifArtista
+    CHECK (ifArtistInsertAlbum (artistaID) = 'True')
 );
-
 
 
 CREATE TABLE TRACCIA
@@ -52,6 +56,7 @@ CREATE TABLE TRACCIA
  			ON UPDATE CASCADE
  			ON DELETE CASCADE
 );
+
 
 CREATE TABLE SEGUITO
 (
@@ -79,8 +84,22 @@ CREATE TABLE ASCOLTI
 	FOREIGN KEY (AscoltatoreID ) REFERENCES UTENTE(UtenteID)
 );
 
+/*FUNZIONI*/
 
+CREATE OR REPLACE FUNCTION ifArtistInsertAlbum ( artistaid VARCHAR(255) ) 
+	RETURNS VARCHAR(5) 
+AS 
+$$
+BEGIN
+    IF ( SELECT UTENTEID FROM UTENTE WHERE utenteid = artistaid AND T_UTENTE <> 'Artista')
+    then return 'False';
+	else
+    return 'True';
+    end if;
+END;
+$$ LANGUAGE plpgsql;
 
+/*POPOLAMENTO DATABASE*/
 
 /* da aggiungere artista id*/
 INSERT INTO ALBUM (TitoloAlbum , ColoreCopertina,	EtichettaDiscografica, ArtistaID, DataUscita )
