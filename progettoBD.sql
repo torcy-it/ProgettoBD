@@ -31,10 +31,10 @@ CREATE TABLE ALBUM
 	DataUscita DATE NOT NULL,
 	ArtistaID VARCHAR ( 255 ) ,
 
-	CONSTRAINT "ArtistaID_fk" FOREIGN KEY (ArtistaID )
+	CONSTRAINT ArtistaID_fk FOREIGN KEY (ArtistaID )
  		REFERENCES Utente (UtenteID) MATCH SIMPLE
  			ON UPDATE CASCADE
- 			ON DELETE CASCADE
+ 			ON DELETE CASCADE,
 
    	CONSTRAINT CheckifArtista
     CHECK (ifArtistInsertAlbum (artistaID) = 'True')
@@ -48,13 +48,16 @@ CREATE TABLE TRACCIA
 	Durata TIME NOT NULL,
 	Genere VARCHAR ( 255 ),
 	T_Traccia TipoTraccia NOT NULL,
-	CodTracciaOriginale INT ( 255 ),
-	AlbumID INT (255),
+	CodTracciaOriginale INT DEFAULT 0,
+	AlbumID int NOT NULL,
 
- 	CONSTRAINT "AlbumID_fk" FOREIGN KEY (AlbumID)
+ 	CONSTRAINT AlbumID_fk FOREIGN KEY (AlbumID)
  		REFERENCES album (AlbumID) MATCH SIMPLE
  			ON UPDATE CASCADE
- 			ON DELETE CASCADE
+ 			ON DELETE CASCADE,
+	
+	CONSTRAINT MaxDurataTraccia 
+		CHECK ( Durata < '01:00:00' AND Durata > '00:00:05' )	
 );
 
 
