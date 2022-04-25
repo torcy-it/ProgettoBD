@@ -5,6 +5,7 @@ CREATE TYPE TipoUtente AS ENUM ('Ascoltatore','Artista');
 CREATE TYPE TipoTraccia AS ENUM ('Originale','Remastering','Cover','Live','Remix');
 
 
+
 CREATE TABLE UTENTE
 (
 	UtenteID VARCHAR (255) PRIMARY KEY,
@@ -69,8 +70,8 @@ CREATE TABLE SEGUITO
  	CONSTRAINT "QuestoUtente_Segue_fk" FOREIGN KEY (segue )
  		REFERENCES Utente (UtenteID) MATCH SIMPLE
  			ON UPDATE CASCADE
- 			ON DELETE CASCADE
- 	CONSTRAINT "QuestoUtente_VieneSeguito_fk" FOREIGN KEY (segue )
+ 			ON DELETE CASCADE,
+ 	CONSTRAINT "QuestoUtente_VieneSeguito_fk" FOREIGN KEY (seguito_da )
  		REFERENCES Utente (UtenteID) MATCH SIMPLE
  			ON UPDATE CASCADE
  			ON DELETE CASCADE
@@ -81,9 +82,9 @@ CREATE TABLE SEGUITO
 CREATE TABLE ASCOLTI
 (	
 	AscoltatoreID VARCHAR ( 255 ) NOT NULL,
-	TracciaID INT ( 255 ) NOT NULL,
+	TracciaID INT  NOT NULL,
 	ora FasciaOraria NOT NULL,
-	FOREIGN KEY (TracciaID ) REFERENCES TRACCIA(Codtraccia),
+	FOREIGN KEY (TracciaID ) REFERENCES TRACCIA(TracciaID),
 	FOREIGN KEY (AscoltatoreID ) REFERENCES UTENTE(UtenteID)
 );
 
@@ -104,7 +105,7 @@ $$ LANGUAGE plpgsql;
 
 /*POPOLAMENTO DATABASE*/
 
-/* da aggiungere artista id*/
+
 INSERT INTO ALBUM (TitoloAlbum , ColoreCopertina,	EtichettaDiscografica, ArtistaID, DataUscita )
 VALUES 
  ('Mutando','Grigia','EastWest Italy','Squallor','01/01/1981'),
@@ -150,8 +151,8 @@ VALUES
  ('Torci','Adolfo', 'Torcicollo','13/03/1999','20/04/2022','a.torcicollo@studenti.unina.it','Ascoltatore');
 
 
-/* da aggiungere album id*/
-INSERT INTO traccia ( codtraccia, titolotraccia, durata, genere, t_traccia, codtracciaoriginale, albumid )
+/* da aggiungere album id, essendoc album id un serial datatype*/
+INSERT INTO traccia ( titolotraccia, durata, genere, t_traccia, codtracciaoriginale, albumid )
 VALUES 
 	('Squallor in concerto','00:01:33','Non-Music','Originale','',)
 	('Damme e denare','00:06:01','Non-Music','Originale','',)
@@ -236,37 +237,37 @@ VALUES
 	('Che cosa c è','00:02:38','Musica D autore','Remastering',)
 	('Che cosa c è','00:02:38','Musica D autore','Originale','',)
 
-/* da aggiungere traccia id*/
+/* da modificare traccia id, non esistono le tracce che iniziano per t*/
 insert into ascolti ( ascoltatoreID , tracciaid , ora)
 values 
-	('Francesca_pgl','Mattina'),
-	('Francesca_pgl','Sera'),
-	('Francesca_pgl','Mattina'),
-	('Francesca_pgl','Sera'),
-	('Francesca_pgl','Pomeriggio'),
-	('Francesca_pgl','Mattina'),
-	('Francesca_pgl','Pomeriggio'),
-	('Francesca_pgl','Pomeriggio'),
-	('Francesca_pgl','Sera'),
-	('Francesca_pgl','Sera'),
-	('Francesca_pgl','Pomeriggio'),
-	('Francesca_pgl','Sera'),
-	('Francesca_pgl','Pomeriggio'),
-	('Torci','Pomeriggio'),
-	('Torci','Notte'),
-	('Torci','Pomeriggio'),
-	('Torci','Pomeriggio'),
-	('Torci','Notte'),
-	('Torci','Notte'),
-	('Torci','Pomeriggio'),
-	('Torci','Pomeriggio'),
-	('Torci','Notte'),
-	('Torci','Mattina'),
-	('Torci','Mattina'),
-	('Torci','Mattina'),
-	('Torci','Pomeriggio'),
-	('Torci','Notte'),
-	('Torci','Notte');
+	('Francesca_pgl','t0053','Mattina'),
+	('Francesca_pgl','t0060','Sera'),
+	('Francesca_pgl','t0000','Mattina'),
+	('Francesca_pgl','t0003','Sera'),
+	('Francesca_pgl','t0078','Pomeriggio'),
+	('Francesca_pgl','t0032','Mattina'),
+	('Francesca_pgl','t0031','Pomeriggio'),
+	('Francesca_pgl','t0068','Pomeriggio'),
+	('Francesca_pgl','t0020','Sera'),
+	('Francesca_pgl','t0081','Sera'),
+	('Francesca_pgl','t0078','Pomeriggio'),
+	('Francesca_pgl','t0081','Sera'),
+	('Francesca_pgl','t0031','Pomeriggio'),
+	('Torci','t0068','Pomeriggio'),
+	('Torci','t0031','Notte'),
+	('Torci','t0003','Pomeriggio'),
+	('Torci','t0032','Pomeriggio'),
+	('Torci','t0078','Notte'),
+	('Torci','t0078','Notte'),
+	('Torci','t0000','Pomeriggio'),
+	('Torci','t0053','Pomeriggio'),
+	('Torci','t0053','Notte'),
+	('Torci','t0060','Mattina'),
+	('Torci','t0068','Mattina'),
+	('Torci','t0020','Mattina'),
+	('Torci','t0020','Pomeriggio'),
+	('Torci','t0020','Notte'),
+	('Torci','t0068','Notte');
 
 
 insert into seguito ( segue , seguito_da ) 
