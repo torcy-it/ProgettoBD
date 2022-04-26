@@ -192,7 +192,7 @@ VALUES
 	('Come il giorno','00:03:58','Pop','Cover',)
 	('Acido Seminterrato','00:02:08','Pop','Cover',)
 	('Civil War','00:07:42','Hard Rock/Rock Clasico','Originale','',)
-	('Knockin on heavens door','00:05:36','Hard Rock/Rock Clasico','Cover',)
+	('Knockin on heavens door','00:05:36','Hard Rock/Rock Clasico','Cover','')
 	('Shotgun Blues','00:03:23','Hard Rock/Rock Clasico','Originale','',)
 	('Personal Jesus','00:04:55','Rock elettronico','Originale','',)
 	('Enjoy the Silence','00:06:13','Rock elettronico','Originale','',)
