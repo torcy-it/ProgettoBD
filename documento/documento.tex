@@ -137,9 +137,9 @@
 				\hline
 				NOME VINCOLO                  & DESCRIZIONE                                                                                                                                                                                                                                                              \\ \hline
 				\hline
-				CorrectEmail                  & \begin{tabular}[c]{@{}l@{}}Gli indirizzi e-mail degli utenti devono essere indirizzi email di forma legittima, \\ ovvero contenere almeno un carattere prima della @, almeno un carattere tra essa \\ e il punto e almeno due caratteri nella parte finale.\end{tabular} \\ \hline
+				CorrectEmailUtente                  & \begin{tabular}[c]{@{}l@{}}Gli indirizzi e-mail degli utenti devono essere indirizzi email di forma legittima, \\ ovvero contenere almeno un carattere prima della @, almeno un carattere tra essa \\ e il punto e almeno due caratteri nella parte finale.\end{tabular} \\ \hline
 				\hline
-				CorrectBirth                  & La DataNascita di un utente deve essere precedente a DataIscrizione.                                                                                                                                                                                                     \\ \hline
+				CorrectBirthUtente                  & La DataNascita di un utente deve essere precedente a DataIscrizione.                                                                                                                                                                                                     \\ \hline
 				\hline
 				UnicitàEmail                  & Una stessa email non può essere associata a utenti diversi.                                                                                                                                                                                                              \\ \hline
 				\hline
@@ -153,7 +153,11 @@
 				\hline
 				ParzialitàCodTracciaOriginale & \begin{tabular}[c]{@{}l@{}}L’attributo CodTracciaOriginale ha valore associato \\ solo se T\_Traccia è Remastering, Cover, Live, o Remix.\end{tabular}                                                                                                                   \\ \hline
 				\hline
-				VincoloTipologiaTraccia       & \begin{tabular}[c]{@{}l@{}}Una traccia con T\_Traccia di valore 'Remastering' \\ ha titolo uguali autore ma deve avere versione e titoloAlbum diversi.\\ Le restanti tipologie di traccia non possono appartenere ad album diversi.\end{tabular}                         \\ \hline
+				VincoloTipologiaTraccia       & \begin{tabular}[c]{@{}l@{}}Una traccia con T\_Traccia di valore 'Remastering' \\ ha titolo e autore uguali ma deve avere versione e titoloAlbum diversi.\\ Le restanti tipologie di traccia non possono appartenere ad album diversi.\end{tabular}                         \\ \hline
+				\hline
+				VincoloRealizzazioneAlbumNotArtista          & L’associazione realizzazione è valida solo se T\_Utente è Autore.                                                                                                                                                                                                            \\ \hline
+				\hline
+				VincoloRealizzazioneAlbumUguali          & Lo stesso Autore non può publicare due Album con lo stesso nome                                                                                                                                                                                                            \\ \hline
 			\end{tabular}
 		\end{adjustbox}
 	\end{table}
