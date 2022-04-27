@@ -1,9 +1,40 @@
 
+/*FUNZIONI*/
+
+CREATE OR REPLACE FUNCTION checkRealizzazioneAlbum ( artistaid VARCHAR(255) ) 
+	RETURNS VARCHAR(5) 
+AS 
+$$
+BEGIN
+    IF ( SELECT UTENTEID FROM UTENTE WHERE utenteid = artistaid AND T_UTENTE <> 'Autore')
+    then return 'False';
+	else
+    return 'True';
+    end if;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION checkTipologiaTraccia ( TitoloT VARCHAR(255), ArtID VARCHAR(255), Ver DATE , AlID INT, T_tr TipoTraccia ) 
+	RETURNS VARCHAR(5) 
+AS 
+$$
+BEGIN
+	IF (T_tr = 'Remastering' AND	
+							(SELECT *
+							FROM TRACCIA AS T 
+							WHERE   T.TitoloTraccia = TitoloT AND T.ArtistaID = ArtID AND T.Versione = Ver AND T.AlbumID = AlID ))
+    then return 'False';
+	else
+    return 'False';
+    end if;
+END;
+$$ LANGUAGE plpgsql;
+
+
 /* DEFINIZIONI TABELLE*/
 CREATE TYPE FasciaOraria AS ENUM ('Mattina','Pomeriggio','Sera','Notte');
 CREATE TYPE TipoUtente AS ENUM ('Ascoltatore','Artista');
 CREATE TYPE TipoTraccia AS ENUM ('Originale','Remastering','Cover','Live','Remix');
-
 
 
 CREATE TABLE UTENTE
@@ -16,9 +47,9 @@ CREATE TABLE UTENTE
 	Email VARCHAR ( 255 ) UNIQUE NOT NULL ,
 	T_Utente TipoUtente DEFAULT 'Ascoltatore',
 
- 	CONSTRAINT Vincolo_email_Utente 
+ 	CONSTRAINT CorrectEmailUtente 
 		CHECK (Email ~* '^[A-Za-z0-9._+%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
-	CONSTRAINT Vincolo_DateSubcrition_dateBirth
+	CONSTRAINT CorrectBirthUtente
 		CHECK ( DataNascita < current_date )
 );
 
@@ -29,18 +60,23 @@ CREATE TABLE ALBUM
 	TitoloAlbum VARCHAR ( 255 )  NOT NULL,
 	ColoreCopertina VARCHAR(255),
 	EtichettaDiscografica VARCHAR ( 255 ),
+	
+	/*SE AGGIUNGO A TRACCIA GLI ATTRIBUTI VERSIONE E ARTISTAID QUESTI ATTRIBUTI SONO RIDONDANTI*/
 	DataUscita DATE NOT NULL,
-	ArtistaID VARCHAR ( 255 ) ,
+	ArtistaID VARCHAR ( 255 ) NOT NULL,
 
 	CONSTRAINT ArtistaID_fk FOREIGN KEY (ArtistaID )
- 		REFERENCES Utente (UtenteID) MATCH SIMPLE
+ 		REFERENCES Utente (UtenteID) 
  			ON UPDATE CASCADE
  			ON DELETE CASCADE,
 
-   	CONSTRAINT CheckifArtista
-    CHECK (ifArtistInsertAlbum (artistaID) = 'True')
+   	CONSTRAINT VincoloRealizzazioneAlbumNotArtista
+    CHECK (checkRealizzazioneAlbum (artistaID) = 'True')
+
+	/*CONSTRAINT VincoloRealizzazioneAlbumUguali   DA FARE*/
 );
 
+																
 
 CREATE TABLE TRACCIA
 (
@@ -52,12 +88,24 @@ CREATE TABLE TRACCIA
 	CodTracciaOriginale INT DEFAULT 0,
 	AlbumID int NOT NULL,
 
+	/*AGGIUNTA ATTRIBUTI VERSIONE E ARTISTAID*/
+	Versione DATE NOT NULL,
+	ArtistaID VARCHAR ( 255 ) NOT NULL,
+
+	CONSTRAINT ArtistaID_fk FOREIGN KEY (ArtistaID )
+ 		REFERENCES Utente (UtenteID) 
+ 			ON UPDATE CASCADE
+ 			ON DELETE CASCADE,
+
  	CONSTRAINT AlbumID_fk FOREIGN KEY (AlbumID)
- 		REFERENCES album (AlbumID) MATCH SIMPLE
+ 		REFERENCES album (AlbumID)
  			ON UPDATE CASCADE
  			ON DELETE CASCADE,
 	
-	CONSTRAINT MaxDurataTraccia 
+	CONSTRAINT vincoloTipologiaTraccia
+		CHECK  ( checkTipologiaTraccia ( TitoloTraccia, ArtistaID, Versione, AlbumID, T_Traccia ) = 'True'),
+
+	CONSTRAINT LimitiDurataTraccia 
 		CHECK ( Durata < '01:00:00' AND Durata > '00:00:05' )	
 );
 
@@ -84,49 +132,16 @@ CREATE TABLE ASCOLTI
 	AscoltatoreID VARCHAR ( 255 ) NOT NULL,
 	TracciaID INT  NOT NULL,
 	ora FasciaOraria NOT NULL,
-	FOREIGN KEY (TracciaID ) REFERENCES TRACCIA(TracciaID),
-	FOREIGN KEY (AscoltatoreID ) REFERENCES UTENTE(UtenteID)
+
+	CONSTRAINT AscoltiTracciaID_fk FOREIGN KEY (TracciaID ) REFERENCES TRACCIA(TracciaID),
+	CONSTRAINT AscoltiAscoltatoreID_fk FOREIGN KEY (AscoltatoreID ) REFERENCES UTENTE(UtenteID)
 );
 
-/*FUNZIONI*/
 
-CREATE OR REPLACE FUNCTION ifArtistInsertAlbum ( artistaid VARCHAR(255) ) 
-	RETURNS VARCHAR(5) 
-AS 
-$$
-BEGIN
-    IF ( SELECT UTENTEID FROM UTENTE WHERE utenteid = artistaid AND T_UTENTE <> 'Artista')
-    then return 'False';
-	else
-    return 'True';
-    end if;
-END;
-$$ LANGUAGE plpgsql;
+
+
 
 /*POPOLAMENTO DATABASE*/
-
-
-INSERT INTO ALBUM (TitoloAlbum , ColoreCopertina,	EtichettaDiscografica, ArtistaID, DataUscita )
-VALUES 
- ('Mutando','Grigia','EastWest Italy','Squallor','01/01/1981'),
- ('THE SCOTTS','Verde','Sony Music','THESCOTTS','24/04/2020'),
- ('ASTROWORLD','Nero','Sony Music','Travis Scott','13/08/2018'),
- ('Man of The Moon','Arancione','Columbia Records','Kid Cudi','15/08/2009'),
- ('The Essential Bob Dylan','Bianco','Columbia Records','Bob Dylan','30/09/2000'),
- ('De gregorio Canta Bob Dylan - Amore e Odio','Rosso','Sony Music','Francesco De Gregorio','30/09/2015'),
- ('Use Your illusion II','Blue','Geffen Records','Guns N Roses','17/08/1991'),  
- ('American IV: The Man Comes Around','Nero','American Recordings','Johnny Cash','01/01/2002'),
- ('Violator(Deluxe)','Nero', 'Akuma Records','Depeche Mode','19/03/1990'), 
- ('Due anni Dopo','Bianco','Columbia Records','Francesco Guccini','01/01/1970'),
- ('The Platinum Collection','Grigio','EMI','Francesco Guccini','10/10/2006'),
- ('Via Paolo Fabbri 43','Marrone','EMI','Francesco Guccini','01/01/1976'),
- ('Ma noi no','Giallo','EastWest Italy','Nomadi','15/05/1992'),
- ('I grandi successi originali','Rosso','RCA Records','Gino Paoli','01/01/2001'),
- ('Il Cielo In Una Stanza','Blue','Italdisc','Mina','01/06/1960'),
- ('I Primi Anni Vol.II','Bianco','Italdisc','Mina','01/01/1997'),
- ('Mina Celentano','Giallo','PDU','MinaCelentano','14/05/1998'),
- ('Unicamentecelentano','Rosa','Clan Celentano','Adriano Celentano','10/11/2006'),
- ('Basta chiudere gli occhi', 'Verde','RCA Records','Gino Paoli','01/01/1964');
 
 
 
@@ -150,6 +165,27 @@ VALUES
  ('Francesca_pgl','Francesca', 'Pugliese','01/01/1996','20/04/2022','F.pugliese@studenti.unina.it','Ascoltatore'),
  ('Torci','Adolfo', 'Torcicollo','13/03/1999','20/04/2022','a.torcicollo@studenti.unina.it','Ascoltatore');
 
+INSERT INTO ALBUM (TitoloAlbum , ColoreCopertina,	EtichettaDiscografica, ArtistaID, DataUscita )
+VALUES 
+ ('Mutando','Grigia','EastWest Italy','Squallor','01/01/1981'),
+ ('THE SCOTTS','Verde','Sony Music','THESCOTTS','24/04/2020'),
+ ('ASTROWORLD','Nero','Sony Music','Travis Scott','13/08/2018'),
+ ('Man of The Moon','Arancione','Columbia Records','Kid Cudi','15/08/2009'),
+ ('The Essential Bob Dylan','Bianco','Columbia Records','Bob Dylan','30/09/2000'),
+ ('De gregorio Canta Bob Dylan - Amore e Odio','Rosso','Sony Music','Francesco De Gregorio','30/09/2015'),
+ ('Use Your illusion II','Blue','Geffen Records','Guns N Roses','17/08/1991'),  
+ ('American IV: The Man Comes Around','Nero','American Recordings','Johnny Cash','01/01/2002'),
+ ('Violator(Deluxe)','Nero', 'Akuma Records','Depeche Mode','19/03/1990'), 
+ ('Due anni Dopo','Bianco','Columbia Records','Francesco Guccini','01/01/1970'),
+ ('The Platinum Collection','Grigio','EMI','Francesco Guccini','10/10/2006'),
+ ('Via Paolo Fabbri 43','Marrone','EMI','Francesco Guccini','01/01/1976'),
+ ('Ma noi no','Giallo','EastWest Italy','Nomadi','15/05/1992'),
+ ('I grandi successi originali','Rosso','RCA Records','Gino Paoli','01/01/2001'),
+ ('Il Cielo In Una Stanza','Blue','Italdisc','Mina','01/06/1960'),
+ ('I Primi Anni Vol.II','Bianco','Italdisc','Mina','01/01/1997'),
+ ('Mina Celentano','Giallo','PDU','MinaCelentano','14/05/1998'),
+ ('Unicamentecelentano','Rosa','Clan Celentano','Adriano Celentano','10/11/2006'),
+ ('Basta chiudere gli occhi', 'Verde','RCA Records','Gino Paoli','01/01/1964');
 
 /* da aggiungere album id, essendoc album id un serial datatype*/
 INSERT INTO traccia ( titolotraccia, durata, genere, t_traccia, codtracciaoriginale, albumid )
